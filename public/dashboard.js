@@ -29,12 +29,22 @@ function initializeTheme() {
 }
 
 function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('pettracker-theme', newTheme);
-    updateThemeIcon(newTheme);
+    try {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        console.log(`🎨 Dashboard: Toggling theme from ${currentTheme} to ${newTheme}`);
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('pettracker-theme', newTheme);
+        updateThemeIcon(newTheme);
+        showDashboardNotification(`Switched to ${newTheme} mode`, 'success');
+        
+        console.log('✅ Dashboard theme toggled successfully to:', newTheme);
+    } catch (error) {
+        console.error('❌ Error toggling dashboard theme:', error);
+        showDashboardNotification('Error switching theme', 'error');
+    }
 }
 
 function updateThemeIcon(theme) {
@@ -415,20 +425,49 @@ function getAlertIcon(type) {
 // Control Functions
 function refreshData() {
     console.log('🔄 Refreshing data...');
+    showDashboardNotification('Refreshing data...', 'info');
     addActivity('info', 'Data refresh requested', 'just now');
     
-    // Simulate refresh
-    const refreshBtn = event.target.closest('button');
-    const originalText = refreshBtn.innerHTML;
-    
-    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-    refreshBtn.disabled = true;
-    
-    setTimeout(() => {
-        refreshBtn.innerHTML = originalText;
-        refreshBtn.disabled = false;
-        addActivity('success', 'Data refreshed successfully', 'just now');
-    }, 2000);
+    try {
+        // Update button state
+        const refreshBtn = document.querySelector('button[onclick="refreshData()"]');
+        if (refreshBtn) {
+            const originalText = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            refreshBtn.disabled = true;
+            
+            // Actually refresh data by re-fetching from server
+            Promise.all([
+                fetch('/api/pets').then(r => r.json()).catch(() => []),
+                fetch('/api/stats').then(r => r.json()).catch(() => ({}))
+            ]).then(([petsData, statsData]) => {
+                pets = petsData;
+                systemStats = statsData;
+                
+                // Update UI
+                updatePetsList();
+                updateSystemStats();
+                updateMap();
+                
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.disabled = false;
+                
+                showDashboardNotification('Data refreshed successfully!', 'success');
+                addActivity('success', 'Data refreshed successfully', 'just now');
+                
+                console.log('✅ Data refresh completed');
+            }).catch(error => {
+                console.error('❌ Data refresh failed:', error);
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.disabled = false;
+                showDashboardNotification('Data refresh failed', 'error');
+                addActivity('warning', 'Data refresh failed', 'just now');
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error in refreshData:', error);
+        showDashboardNotification('Error refreshing data', 'error');
+    }
 }
 
 function centerMap() {
@@ -491,6 +530,23 @@ function exportData() {
     
     URL.revokeObjectURL(url);
     addActivity('success', 'Data exported successfully', 'just now');
+}
+
+// Navigation Functions
+function navigateHome() {
+    console.log('🏠 Navigating to homepage...');
+    showDashboardNotification('Navigating to homepage...', 'info');
+    
+    try {
+        const homeUrl = window.location.origin + '/';
+        console.log('🌐 Opening homepage at:', homeUrl);
+        window.location.href = homeUrl;
+    } catch (error) {
+        console.error('❌ Error navigating to homepage:', error);
+        showDashboardNotification('Error navigating to homepage', 'error');
+        // Fallback
+        window.open('/', '_self');
+    }
 }
 
 // Periodic Updates
@@ -773,6 +829,7 @@ document.head.insertAdjacentHTML('beforeend', markerStyles);
 
 // Make all dashboard functions globally accessible
 window.toggleTheme = toggleTheme;
+window.navigateHome = navigateHome;
 window.showAddPetModal = showAddPetModal;
 window.closeAddPetModal = closeAddPetModal;
 window.closeDashboardDeviceModal = closeDashboardDeviceModal;
@@ -788,5 +845,6 @@ window.showHelp = showHelp;
 window.showSettings = showSettings;
 window.exportData = exportData;
 window.showDashboardNotification = showDashboardNotification;
+window.navigateHome = navigateHome;
 
 console.log('🚀 PetTracker Pro Dashboard loaded successfully!');

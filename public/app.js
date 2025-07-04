@@ -324,23 +324,13 @@ function startAnimations() {
 
 // Global functions for button interactions
 function launchDemo() {
-    // Add loading state
-    const button = event.target.closest('button');
-    const originalText = button.innerHTML;
-    
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
-    button.disabled = true;
-    
-    // Simulate loading then open dashboard
-    setTimeout(() => {
+    // Try to navigate to dashboard in same window first, fallback to new window
+    try {
+        window.location.href = '/dashboard';
+    } catch (error) {
+        console.log('Opening dashboard in new window');
         window.open('/dashboard', '_blank');
-        
-        // Reset button
-        setTimeout(() => {
-            button.innerHTML = originalText;
-            button.disabled = false;
-        }, 1000);
-    }, 1500);
+    }
 }
 
 function watchDemo() {
@@ -532,11 +522,6 @@ async function connectDevice(petId, deviceId) {
         console.error('Device connection error:', error);
         showNotification('Device connection failed. Please try again.', 'error');
     }
-}
-
-// Update the launchDemo function to go directly to dashboard
-function launchDemo() {
-    window.open('/dashboard', '_blank');
 }
 
 // Utility functions

@@ -631,22 +631,6 @@ function startAnimations() {
     }
 }
 
-// Global functions for button interactions
-function launchDemo() {
-    // Try to navigate to dashboard in same window first, fallback to new window
-    try {
-        window.location.href = '/dashboard';
-    } catch (error) {
-        console.log('Opening dashboard in new window');
-        window.open('/dashboard', '_blank');
-    }
-}
-
-function watchDemo() {
-    // Show demo guide modal
-    showDemoGuide();
-}
-
 function showDemoGuide() {
     const modal = document.createElement('div');
     modal.className = 'modal';
@@ -713,87 +697,6 @@ function toggleMobileMenu() {
     if (mobileMenu) {
         mobileMenu.classList.toggle('active');
     }
-}
-
-// Registration and device pairing functions
-function showRegistration() {
-    const modal = document.getElementById('registrationModal');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
-}
-
-function closeRegistration() {
-    const modal = document.getElementById('registrationModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-function closeDeviceModal() {
-    const modal = document.getElementById('deviceModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-function submitRegistration() {
-    const form = document.getElementById('petRegistrationForm');
-    const formData = new FormData(form);
-    
-    const petData = {
-        name: formData.get('name'),
-        species: formData.get('species'),
-        breed: formData.get('breed'),
-        age: formData.get('age'),
-        avatar: formData.get('avatar') || getDefaultAvatar(formData.get('species'))
-    };
-    
-    console.log('Registering pet:', petData);
-    
-    // Send to server
-    socket.emit('register_pet', petData);
-    
-    // Show success message
-    showNotification('Pet registered successfully! Please pair with a device.', 'success');
-    
-    // Close registration modal and show device pairing
-    closeRegistration();
-    setTimeout(() => {
-        const deviceModal = document.getElementById('deviceModal');
-        if (deviceModal) {
-            deviceModal.style.display = 'flex';
-        }
-    }, 500);
-}
-
-function getDefaultAvatar(species) {
-    const avatars = {
-        'dog': '🐕',
-        'cat': '🐱',
-        'bird': '🐦',
-        'rabbit': '🐰',
-        'other': '🐾'
-    };
-    return avatars[species] || '🐾';
-}
-
-function pairDevice(deviceId) {
-    console.log('Pairing device:', deviceId);
-    
-    // Send pairing request to server
-    socket.emit('pair_device', { deviceId });
-    
-    // Show success message
-    showNotification('Device paired successfully! Your pet is now being tracked.', 'success');
-    
-    // Close device modal
-    closeDeviceModal();
-    
-    // Refresh data
-    setTimeout(() => {
-        location.reload();
-    }, 2000);
 }
 
 // Handle pet registration form submission

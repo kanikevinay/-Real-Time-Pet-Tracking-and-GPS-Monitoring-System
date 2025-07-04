@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetTracker Pro - IoT Pet Safety Solutions</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-paw"></i>
+                <span class="brand-text">PetTracker Pro</span>
+                <span class="brand-subtitle">IoT Pet Safety Solutions</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#demo" class="nav-link">Technology</a>
+                <a href="#demo" class="nav-link">Demo</a>
+                <button class="btn-theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+                <button class="btn-primary" onclick="window.open('/dashboard', '_blank')">
+                    <i class="fas fa-rocket"></i>
+                    Launch Dashboard
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="status-badge">
+                    <i class="fas fa-circle status-dot"></i>
+                    IoT System Online
+                </div>
+                
+                <h1 class="hero-title">
+                    Keep Your Pets<br>
+                    <span class="gradient-text">Safe & Found</span>
+                </h1>
+                
+                <p class="hero-description">
+                    Advanced IoT-powered pet tracking system with real-time GPS monitoring, 
+                    smart geofencing, and instant alerts. Professional-grade technology for pet safety.
+                </p>
+                
+                <div class="hero-buttons">
+                    <button class="btn-hero-primary" onclick="launchDemo()">
+                        <i class="fas fa-rocket"></i>
+                        Live Dashboard
+                    </button>
+                    <button class="btn-hero-secondary" onclick="watchDemo()">
+                        <i class="fas fa-play"></i>
+                        Demo Guide
+                    </button>
+                </div>
+            </div>
+            
+            <div class="hero-dashboard">
+                <div class="dashboard-card">
+                    <div class="dashboard-header">
+                        <h3>Live Dashboard</h3>
+                        <div class="live-indicator">
+                            <i class="fas fa-circle"></i>
+                            Live
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-stats">
+                        <div class="stat-card stat-primary">
+                            <div class="stat-number" id="activePets">0</div>
+                            <div class="stat-label">Active Pets</div>
+                        </div>
+                        <div class="stat-card stat-success">
+                            <div class="stat-number" id="onlinePercent">0%</div>
+                            <div class="stat-label">Online</div>
+                        </div>
+                    </div>
+                    
+                    <div class="pet-list" id="petList">
+                        <div class="empty-state">
+                            <i class="fas fa-paw"></i>
+                            <p>No active pets. Register your first pet to get started!</p>
+                            <button class="btn-register" onclick="showRegistration()">
+                                <i class="fas fa-plus"></i>
+                                Register Pet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value gradient-text">99.9%</div>
+                    <div class="stat-description">System Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value gradient-text">2.5s</div>
+                    <div class="stat-description">Update Frequency</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value gradient-text">24/7</div>
+                    <div class="stat-description">Monitoring</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value gradient-text">5m</div>
+                    <div class="stat-description">GPS Accuracy</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Advanced IoT Features</h2>
+            <p class="section-subtitle">
+                Professional-grade pet tracking technology with enterprise-level reliability and 
+                consumer-friendly interface.
+            </p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon primary">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <h3>Real-Time GPS Tracking</h3>
+                    <p>Live location updates every 2.5 seconds with pinpoint accuracy. Never lose track of your pet's whereabouts.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon success">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Smart Geofencing</h3>
+                    <p>Create custom safe zones with intelligent boundary detection. Get instant alerts when pets wander off.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon warning">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>Instant Alerts</h3>
+                    <p>Real-time notifications for all safety events. Stay informed with push notifications and SMS alerts.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon info">
+                        <i class="fas fa-battery-three-quarters"></i>
+                    </div>
+                    <h3>Battery Monitoring</h3>
+                    <p>Smart power management with low battery alerts. Long-lasting IoT devices with efficient energy usage.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Location History</h3>
+                    <p>Complete tracking history with route visualization. Analyze your pet's movement patterns over time.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon teal">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Mobile Ready</h3>
+                    <p>Responsive design works perfectly on all devices. Access your pet's data anywhere, anytime.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <h2 class="section-title white">See It In Action</h2>
+            <p class="section-subtitle white">
+                Experience the professional dashboard with live IoT simulation and real-time features.
+            </p>
+            
+            <div class="demo-card">
+                <div class="demo-video">
+                    <i class="fas fa-play demo-play-icon"></i>
+                    <div class="demo-content">
+                        <h3>Live Demo Available</h3>
+                        <p>Click below to launch the interactive dashboard and see the IoT pet tracking system in action.</p>
+                    </div>
+                </div>
+                
+                <button class="btn-demo" onclick="launchDemo()">
+                    <i class="fas fa-external-link-alt"></i>
+                    Launch Interactive Demo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Ready to Experience PetTracker Pro?</h2>
+            <p class="cta-description">
+                Launch the professional dashboard and see how modern IoT technology 
+                can keep your pets safe and give you peace of mind.
+            </p>
+            
+            <div class="cta-buttons">
+                <button class="btn-cta-primary" onclick="launchDemo()">
+                    <i class="fas fa-rocket"></i>
+                    Launch Dashboard
+                </button>
+                <button class="btn-cta-secondary">
+                    <i class="fas fa-book"></i>
+                    Demo Guide
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-paw"></i>
+                        <span>PetTracker Pro</span>
+                    </div>
+                    <p>Professional IoT pet tracking solutions for modern pet owners.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Features</h4>
+                    <ul>
+                        <li>Real-time GPS Tracking</li>
+                        <li>Smart Geofencing</li>
+                        <li>Instant Alerts</li>
+                        <li>Battery Monitoring</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Technology</h4>
+                    <ul>
+                        <li>Node.js Backend</li>
+                        <li>Socket.IO Real-time</li>
+                        <li>Modern JavaScript</li>
+                        <li>Responsive Design</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Demo</h4>
+                    <ul>
+                        <li>Live Dashboard</li>
+                        <li>Demo Guide</li>
+                        <li>Documentation</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 PetTracker Pro. Built with ❤️ for pet safety and modern web development.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Pet Registration Modal -->
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Register New Pet</h2>
+                <button class="modal-close" onclick="closeRegistration()">&times;</button>
+            </div>
+            <form id="petRegistrationForm" class="registration-form">
+                <div class="form-group">
+                    <label for="petName">Pet Name *</label>
+                    <input type="text" id="petName" name="name" required placeholder="Enter your pet's name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="petSpecies">Species *</label>
+                    <select id="petSpecies" name="species" required>
+                        <option value="">Select species</option>
+                        <option value="dog">Dog</option>
+                        <option value="cat">Cat</option>
+                        <option value="bird">Bird</option>
+                        <option value="rabbit">Rabbit</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="petBreed">Breed</label>
+                    <input type="text" id="petBreed" name="breed" placeholder="Enter breed (optional)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="petAge">Age</label>
+                    <input type="text" id="petAge" name="age" placeholder="Enter age (optional)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="petAvatar">Avatar</label>
+                    <select id="petAvatar" name="avatar">
+                        <option value="">Auto-select</option>
+                        <option value="🐕">🐕 Dog</option>
+                        <option value="🐱">🐱 Cat</option>
+                        <option value="🐦">🐦 Bird</option>
+                        <option value="🐰">🐰 Rabbit</option>
+                        <option value="🐾">🐾 Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeRegistration()">Cancel</button>
+                    <button type="submit" class="btn-primary">Register Pet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Device Connection Modal -->
+    <div id="deviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Connect IoT Device</h2>
+                <button class="modal-close" onclick="closeDeviceModal()">&times;</button>
+            </div>
+            <div class="device-connection">
+                <p>Your pet <strong id="pendingPetName"></strong> has been registered successfully!</p>
+                <p>Now select an available IoT device to connect:</p>
+                
+                <div id="availableDevices" class="device-list">
+                    <!-- Devices will be populated here -->
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeDeviceModal()">Skip for Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

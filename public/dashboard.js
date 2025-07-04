@@ -533,7 +533,7 @@ async function handleDashboardPetRegistration(formData) {
         species: formData.get('species'),
         breed: formData.get('breed'),
         age: formData.get('age'),
-        avatar: formData.get('avatar')
+        avatar: formData.get('avatar') || getDefaultAvatar(formData.get('species'))
     };
     
     try {
@@ -560,6 +560,23 @@ async function handleDashboardPetRegistration(formData) {
         console.error('Registration error:', error);
         showDashboardNotification('Registration failed. Please try again.', 'error');
     }
+}
+
+function submitDashboardPetForm() {
+    const form = document.getElementById('dashboardPetForm');
+    const formData = new FormData(form);
+    handleDashboardPetRegistration(formData);
+}
+
+function getDefaultAvatar(species) {
+    const avatars = {
+        'dog': '🐕',
+        'cat': '🐱',
+        'bird': '🐦',
+        'rabbit': '🐰',
+        'other': '🐾'
+    };
+    return avatars[species] || '🐾';
 }
 
 async function showDashboardDeviceConnection(pet) {
@@ -618,10 +635,14 @@ async function connectDashboardDevice(petId, deviceId) {
         const result = await response.json();
         
         if (result.success) {
-            closeDashboardDeviceModal();
             showDashboardNotification(`Device ${deviceId} connected successfully!`, 'success');
-            addActivity('success', `Device ${deviceId} connected to ${result.pet.name}`, 'just now');
-            // The socket will handle updating the UI with the new active pet
+            closeDashboardDeviceModal();
+            addActivity('success', `Device connected to ${currentDashboardPendingPet?.name}`, 'just now');
+            
+            // Refresh dashboard data
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
         } else {
             showDashboardNotification('Device connection failed: ' + result.error, 'error');
         }
@@ -642,36 +663,28 @@ function showDashboardNotification(message, type = 'info') {
         color: white;
         padding: 1rem 1.5rem;
         border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        z-index: 1001;
-        transform: translateX(100%);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+        transform: translateX(300px);
         transition: transform 0.3s ease;
-        max-width: 400px;
     `;
-    
     notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
-        </div>
+        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle" style="margin-right: 0.5rem;"></i>
+        ${message}
     `;
     
     document.body.appendChild(notification);
     
-    // Slide in
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 100);
     
-    // Slide out and remove
     setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
+        notification.style.transform = 'translateX(300px)';
         setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
+            document.body.removeChild(notification);
         }, 300);
-    }, 4000);
+    }, 3000);
 }
 
 // Add CSS for custom map markers

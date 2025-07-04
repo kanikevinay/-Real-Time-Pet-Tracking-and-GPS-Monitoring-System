@@ -235,7 +235,7 @@
                 <h2>Add New Pet</h2>
                 <button class="modal-close" onclick="closeAddPetModal()">&times;</button>
             </div>
-            <form id="dashboardPetForm" class="registration-form">
+            <form id="dashboardPetForm" class="registration-form" onsubmit="event.preventDefault(); submitDashboardPetForm();">
                 <div class="form-group">
                     <label for="dashPetName">Pet Name *</label>
                     <input type="text" id="dashPetName" name="name" required placeholder="Enter your pet's name">

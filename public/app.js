@@ -406,19 +406,85 @@ function toggleMobileMenu() {
     }
 }
 
-// Pet Registration Functions
+// Registration and device pairing functions
 function showRegistration() {
-    document.getElementById('registrationModal').style.display = 'flex';
+    const modal = document.getElementById('registrationModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
 }
 
 function closeRegistration() {
-    document.getElementById('registrationModal').style.display = 'none';
-    document.getElementById('petRegistrationForm').reset();
+    const modal = document.getElementById('registrationModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 function closeDeviceModal() {
-    document.getElementById('deviceModal').style.display = 'none';
-    currentPendingPet = null;
+    const modal = document.getElementById('deviceModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function submitRegistration() {
+    const form = document.getElementById('petRegistrationForm');
+    const formData = new FormData(form);
+    
+    const petData = {
+        name: formData.get('name'),
+        species: formData.get('species'),
+        breed: formData.get('breed'),
+        age: formData.get('age'),
+        avatar: formData.get('avatar') || getDefaultAvatar(formData.get('species'))
+    };
+    
+    console.log('Registering pet:', petData);
+    
+    // Send to server
+    socket.emit('register_pet', petData);
+    
+    // Show success message
+    showNotification('Pet registered successfully! Please pair with a device.', 'success');
+    
+    // Close registration modal and show device pairing
+    closeRegistration();
+    setTimeout(() => {
+        const deviceModal = document.getElementById('deviceModal');
+        if (deviceModal) {
+            deviceModal.style.display = 'flex';
+        }
+    }, 500);
+}
+
+function getDefaultAvatar(species) {
+    const avatars = {
+        'dog': '🐕',
+        'cat': '🐱',
+        'bird': '🐦',
+        'rabbit': '🐰',
+        'other': '🐾'
+    };
+    return avatars[species] || '🐾';
+}
+
+function pairDevice(deviceId) {
+    console.log('Pairing device:', deviceId);
+    
+    // Send pairing request to server
+    socket.emit('pair_device', { deviceId });
+    
+    // Show success message
+    showNotification('Device paired successfully! Your pet is now being tracked.', 'success');
+    
+    // Close device modal
+    closeDeviceModal();
+    
+    // Refresh data
+    setTimeout(() => {
+        location.reload();
+    }, 2000);
 }
 
 // Handle pet registration form submission

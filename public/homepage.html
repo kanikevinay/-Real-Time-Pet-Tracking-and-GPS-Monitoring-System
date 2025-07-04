@@ -222,7 +222,7 @@
                     <i class="fas fa-rocket"></i>
                     Launch Dashboard
                 </button>
-                <button class="btn-cta-secondary">
+                <button class="btn-cta-secondary" onclick="watchDemo()">
                     <i class="fas fa-book"></i>
                     Demo Guide
                 </button>
@@ -285,7 +285,7 @@
                 <h2>Register New Pet</h2>
                 <button class="modal-close" onclick="closeRegistration()">&times;</button>
             </div>
-            <form id="petRegistrationForm" class="registration-form">
+            <form id="petRegistrationForm" class="registration-form" onsubmit="event.preventDefault(); submitRegistration();">
                 <div class="form-group">
                     <label for="petName">Pet Name *</label>
                     <input type="text" id="petName" name="name" required placeholder="Enter your pet's name">

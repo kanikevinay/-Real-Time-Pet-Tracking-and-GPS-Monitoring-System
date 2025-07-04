@@ -37,14 +37,22 @@ function initializeTheme() {
 }
 
 function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('pettracker-theme', newTheme);
-    updateThemeIcon(newTheme);
-    showNotification(`Switched to ${newTheme} mode`, 'success');
-    console.log('🎨 Theme toggled to:', newTheme);
+    try {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        console.log(`🎨 Toggling theme from ${currentTheme} to ${newTheme}`);
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('pettracker-theme', newTheme);
+        updateThemeIcon(newTheme);
+        showNotification(`Switched to ${newTheme} mode`, 'success');
+        
+        console.log('✅ Theme toggled successfully to:', newTheme);
+    } catch (error) {
+        console.error('❌ Error toggling theme:', error);
+        showNotification('Error switching theme', 'error');
+    }
 }
 
 function updateThemeIcon(theme) {
@@ -60,11 +68,34 @@ function launchDemo() {
     showNotification('Opening dashboard...', 'info');
     
     try {
+        // Check if we're in the same domain
+        const currentDomain = window.location.hostname;
+        const dashboardUrl = window.location.origin + '/dashboard';
+        
+        console.log('🌐 Opening dashboard at:', dashboardUrl);
+        
         // Try to navigate in same window first
-        window.location.href = '/dashboard';
+        if (currentDomain.includes('localhost') || currentDomain.includes('127.0.0.1')) {
+            window.location.href = dashboardUrl;
+        } else {
+            // For deployed version, open in same window
+            window.open(dashboardUrl, '_self');
+        }
+        
+        setTimeout(() => {
+            showNotification('Dashboard opened successfully!', 'success');
+        }, 500);
+        
     } catch (error) {
-        console.log('Opening dashboard in new window');
-        window.open('/dashboard', '_blank');
+        console.error('❌ Error launching dashboard:', error);
+        showNotification('Error opening dashboard. Please try again.', 'error');
+        
+        // Fallback: try opening in new window
+        try {
+            window.open('/dashboard', '_blank');
+        } catch (fallbackError) {
+            console.error('❌ Fallback failed:', fallbackError);
+        }
     }
 }
 
@@ -147,13 +178,29 @@ function closeDemoGuide() {
 // Pet registration functions
 function showRegistration() {
     console.log('📝 Opening pet registration...');
-    const modal = document.getElementById('registrationModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        showNotification('Registration form opened', 'info');
-    } else {
-        console.error('❌ Registration modal not found');
-        showNotification('Registration form not found', 'error');
+    
+    try {
+        const modal = document.getElementById('registrationModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            showNotification('Registration form opened', 'info');
+            console.log('✅ Registration modal opened successfully');
+        } else {
+            console.error('❌ Registration modal not found in DOM');
+            
+            // Try to create the modal if it doesn't exist
+            createRegistrationModal();
+            setTimeout(() => {
+                const newModal = document.getElementById('registrationModal');
+                if (newModal) {
+                    newModal.style.display = 'flex';
+                    showNotification('Registration form created and opened', 'success');
+                }
+            }, 100);
+        }
+    } catch (error) {
+        console.error('❌ Error opening registration modal:', error);
+        showNotification('Error opening registration form', 'error');
     }
 }
 
@@ -179,45 +226,93 @@ function closeDeviceModal() {
 function submitRegistration() {
     console.log('📝 Submitting pet registration...');
     
-    const form = document.getElementById('petRegistrationForm');
-    if (!form) {
-        console.error('❌ Registration form not found');
-        showNotification('Registration form not found', 'error');
-        return;
-    }
-    
-    const formData = new FormData(form);
-    
-    const petData = {
-        name: formData.get('name'),
-        species: formData.get('species'),
-        breed: formData.get('breed'),
-        age: formData.get('age'),
-        avatar: formData.get('avatar') || getDefaultAvatar(formData.get('species'))
-    };
-    
-    console.log('📋 Pet data:', petData);
-    
-    // Validate required fields
-    if (!petData.name || !petData.species) {
-        showNotification('Please fill in required fields (Name and Species)', 'error');
-        return;
-    }
-    
-    // Send to server
-    socket.emit('register_pet', petData);
-    
-    // Show success message
-    showNotification(`${petData.name} registered successfully! Please pair with a device.`, 'success');
-    
-    // Close registration modal and show device pairing
-    closeRegistration();
-    setTimeout(() => {
-        const deviceModal = document.getElementById('deviceModal');
-        if (deviceModal) {
-            deviceModal.style.display = 'flex';
+    try {
+        const form = document.getElementById('petRegistrationForm');
+        if (!form) {
+            console.error('❌ Registration form not found');
+            showNotification('Registration form not found', 'error');
+            return;
         }
-    }, 500);
+        
+        const formData = new FormData(form);
+        
+        const petData = {
+            name: formData.get('name')?.trim(),
+            species: formData.get('species'),
+            breed: formData.get('breed')?.trim() || '',
+            age: formData.get('age')?.trim() || '',
+            avatar: formData.get('avatar') || getDefaultAvatar(formData.get('species'))
+        };
+        
+        console.log('📋 Pet data collected:', petData);
+        
+        // Validate required fields
+        if (!petData.name || !petData.species) {
+            showNotification('Please fill in required fields (Name and Species)', 'error');
+            return;
+        }
+        
+        if (petData.name.length < 2) {
+            showNotification('Pet name must be at least 2 characters long', 'error');
+            return;
+        }
+        
+        // Store pet data globally for device pairing
+        currentPendingPet = petData;
+        
+        // Send to server if socket is available
+        if (socket && socket.connected) {
+            socket.emit('register_pet', petData);
+        } else {
+            console.log('📡 Socket not available, storing pet data locally');
+            
+            // Store in localStorage as fallback
+            const existingPets = JSON.parse(localStorage.getItem('pettracker-pets') || '[]');
+            existingPets.push({
+                ...petData,
+                id: Date.now().toString(),
+                registeredAt: new Date().toISOString()
+            });
+            localStorage.setItem('pettracker-pets', JSON.stringify(existingPets));
+        }
+        
+        // Show success message
+        showNotification(`${petData.name} registered successfully! Please pair with a device.`, 'success');
+        
+        // Close registration modal and show device pairing
+        closeRegistration();
+        
+        setTimeout(() => {
+            const deviceModal = document.getElementById('deviceModal');
+            if (deviceModal) {
+                // Update pending pet name in device modal
+                const pendingPetName = document.getElementById('pendingPetName');
+                if (pendingPetName) {
+                    pendingPetName.textContent = petData.name;
+                }
+                deviceModal.style.display = 'flex';
+                populateAvailableDevices();
+            } else {
+                console.log('🔧 Creating device modal...');
+                createRegistrationModal();
+                setTimeout(() => {
+                    const newDeviceModal = document.getElementById('deviceModal');
+                    if (newDeviceModal) {
+                        const pendingPetName = document.getElementById('pendingPetName');
+                        if (pendingPetName) {
+                            pendingPetName.textContent = petData.name;
+                        }
+                        newDeviceModal.style.display = 'flex';
+                        populateAvailableDevices();
+                    }
+                }, 200);
+            }
+        }, 500);
+        
+    } catch (error) {
+        console.error('❌ Error submitting registration:', error);
+        showNotification('Error registering pet. Please try again.', 'error');
+    }
 }
 
 function getDefaultAvatar(species) {
@@ -804,6 +899,93 @@ async function connectDevice(petId, deviceId) {
     }
 }
 
+// Function to create registration modal if missing
+function createRegistrationModal() {
+    console.log('🔧 Creating registration modal...');
+    
+    const modalHTML = `
+        <!-- Pet Registration Modal -->
+        <div id="registrationModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Register New Pet</h2>
+                    <button class="modal-close" onclick="closeRegistration()">&times;</button>
+                </div>
+                <form id="petRegistrationForm" class="registration-form" onsubmit="event.preventDefault(); submitRegistration();">
+                    <div class="form-group">
+                        <label for="petName">Pet Name *</label>
+                        <input type="text" id="petName" name="name" required placeholder="Enter your pet's name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="petSpecies">Species *</label>
+                        <select id="petSpecies" name="species" required>
+                            <option value="">Select species</option>
+                            <option value="dog">Dog</option>
+                            <option value="cat">Cat</option>
+                            <option value="bird">Bird</option>
+                            <option value="rabbit">Rabbit</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="petBreed">Breed</label>
+                        <input type="text" id="petBreed" name="breed" placeholder="Enter breed (optional)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="petAge">Age</label>
+                        <input type="text" id="petAge" name="age" placeholder="Enter age (optional)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="petAvatar">Avatar</label>
+                        <select id="petAvatar" name="avatar">
+                            <option value="">Auto-select</option>
+                            <option value="🐕">🐕 Dog</option>
+                            <option value="🐱">🐱 Cat</option>
+                            <option value="🐦">🐦 Bird</option>
+                            <option value="🐰">🐰 Rabbit</option>
+                            <option value="🐾">🐾 Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeRegistration()">Cancel</button>
+                        <button type="submit" class="btn-primary">Register Pet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Device Connection Modal -->
+        <div id="deviceModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Connect IoT Device</h2>
+                    <button class="modal-close" onclick="closeDeviceModal()">&times;</button>
+                </div>
+                <div class="device-connection">
+                    <p>Your pet <strong id="pendingPetName"></strong> has been registered successfully!</p>
+                    <p>Now select an available IoT device to connect:</p>
+                    
+                    <div id="availableDevices" class="device-list">
+                        <!-- Devices will be populated here -->
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeDeviceModal()">Skip for Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    populateAvailableDevices();
+}
+
 // Utility functions
 function showNotification(message, type = 'info') {
     // Create notification element
@@ -849,37 +1031,15 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Emergency debug and test functions
-function testAllFunctions() {
-    console.log('Testing all functions...');
-    showNotification('Testing notification system!', 'success');
-    
-    // Test all critical functions
-    const functions = [
-        'toggleTheme', 'launchDemo', 'watchDemo', 'showRegistration', 
-        'closeRegistration', 'closeDeviceModal', 'submitRegistration'
-    ];
-    
-    functions.forEach(func => {
-        if (typeof window[func] === 'function') {
-            console.log(`✅ ${func} is available`);
-        } else {
-            console.error(`❌ ${func} is NOT available`);
-        }
-    });
-}
-
-// Add emergency test button (remove after testing)
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Add test button temporarily
-    const testBtn = document.createElement('button');
-    testBtn.textContent = 'TEST FUNCTIONS';
-    testBtn.style.cssText = 'position:fixed;top:10px;left:10px;z-index:99999;background:red;color:white;padding:10px;';
-    testBtn.onclick = testAllFunctions;
-    document.body.appendChild(testBtn);
+    console.log('🚀 PetTracker Pro initialized and ready!');
     
-    // Test immediately
-    setTimeout(testAllFunctions, 1000);
+    // Populate available devices for demo
+    populateAvailableDevices();
+    
+    // Initialize system stats
+    updateSystemStats();
 });
 
 // Make functions globally available

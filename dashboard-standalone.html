@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetTracker Pro - Real-Time Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body class="dashboard-body">
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+        <div class="header-container">
+            <div class="header-brand">
+                <i class="fas fa-paw"></i>
+                <span>PetTracker Pro</span>
+                <div class="system-status">
+                    <i class="fas fa-circle status-online"></i>
+                    System Online
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <button class="btn-header" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+                <button class="btn-header" onclick="showAddPet()">
+                    <i class="fas fa-plus"></i>
+                    Add Pet
+                </button>
+                <button class="btn-header" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+                <button class="btn-header" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-home"></i>
+                    Homepage
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Main Content -->
+    <main class="dashboard-main">
+        <!-- Stats Overview -->
+        <section class="stats-overview">
+            <div class="stat-card-grid">
+                <div class="stat-card primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalPets">0</div>
+                        <div class="stat-label">Active Pets</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-icon">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="onlinePets">0</div>
+                        <div class="stat-label">Online</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-battery-half"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="averageBattery">0%</div>
+                        <div class="stat-label">Avg Battery</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card info">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Monitoring</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Map Section -->
+            <section class="map-section">
+                <div class="section-header">
+                    <h2>
+                        <i class="fas fa-map"></i>
+                        Live GPS Tracking
+                    </h2>
+                    <div class="map-controls">
+                        <button class="btn-map" onclick="centerMap()">
+                            <i class="fas fa-crosshairs"></i>
+                            Center
+                        </button>
+                        <button class="btn-map" onclick="toggleSatellite()">
+                            <i class="fas fa-satellite"></i>
+                            Satellite
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+                
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot safe"></div>
+                        <span>Safe</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot warning"></div>
+                        <span>Warning</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot danger"></div>
+                        <span>Alert</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pets Section -->
+            <section class="pets-section">
+                <div class="section-header">
+                    <h2>
+                        <i class="fas fa-list"></i>
+                        Pet Status
+                    </h2>
+                    <div class="filter-controls">
+                        <select id="statusFilter" onchange="filterPets()">
+                            <option value="all">All Pets</option>
+                            <option value="safe">Safe</option>
+                            <option value="warning">Warning</option>
+                            <option value="danger">Alert</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="pets-list" id="petsList">
+                    <div class="dashboard-empty-state">
+                        <i class="fas fa-paw"></i>
+                        <h3>No Active Pets</h3>
+                        <p>Register your first pet to start real-time tracking</p>
+                        <button class="btn-primary" onclick="window.location.href='../index.html'">
+                            <i class="fas fa-plus"></i>
+                            Register Pet
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Stats Section -->
+            <section class="system-section">
+                <div class="section-header">
+                    <h2>
+                        <i class="fas fa-server"></i>
+                        System Status
+                    </h2>
+                </div>
+                
+                <div class="system-stats">
+                    <div class="system-stat">
+                        <span class="system-stat-label">Uptime</span>
+                        <span class="system-stat-value">99.9%</span>
+                    </div>
+                    <div class="system-stat">
+                        <span class="system-stat-label">Update Frequency</span>
+                        <span class="system-stat-value">2.5s</span>
+                    </div>
+                    <div class="system-stat">
+                        <span class="system-stat-label">GPS Accuracy</span>
+                        <span class="system-stat-value">5m</span>
+                    </div>
+                    <div class="system-stat">
+                        <span class="system-stat-label">Connected Devices</span>
+                        <span class="system-stat-value" id="connectedDevices">0</span>
+                    </div>
+                </div>
+                
+                <div class="activity-feed">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list" id="activityList">
+                        <div class="activity-item">
+                            <div class="activity-icon info">
+                                <i class="fas fa-info"></i>
+                            </div>
+                            <div class="activity-text">System initialized successfully</div>
+                            <div class="activity-time">Just now</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Pet Registration Modal -->
+    <div id="addPetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Pet</h2>
+                <span class="close" onclick="hideAddPet()">&times;</span>
+            </div>
+            <form id="addPetForm">
+                <div class="form-group">
+                    <label for="newPetName">Pet Name</label>
+                    <input type="text" id="newPetName" name="petName" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPetType">Pet Type</label>
+                    <select id="newPetType" name="petType" required>
+                        <option value="">Select pet type</option>
+                        <option value="dog">Dog</option>
+                        <option value="cat">Cat</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn-secondary" onclick="hideAddPet()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Pet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-paw"></i>
+            <div class="loading-text">Loading Dashboard...</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="../index.html">Homepage</a>
+                <a href="#" onclick="showAbout()">About</a>
+                <a href="#" onclick="showHelp()">Help</a>
+            </div>
+            <div>&copy; 2025 PetTracker Pro. Professional pet safety technology.</div>
+        </div>
+    </footer>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Check if we're running in Live Server mode
+        const isLiveServer = !window.location.port || window.location.port === '5500' || window.location.port === '5501';
+        
+        if (!isLiveServer) {
+            // Load Socket.IO for Node.js server
+            const script = document.createElement('script');
+            script.src = '/socket.io/socket.io.js';
+            document.head.appendChild(script);
+        }
+    </script>
+    <script src="dashboard-standalone.js"></script>
+</body>
+</html>

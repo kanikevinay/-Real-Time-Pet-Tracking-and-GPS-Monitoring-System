@@ -1,5 +1,15 @@
-// Initialize Socket.IO connection
-const socket = io();
+// Initialize Socket.IO connection (with fallback)
+let socket;
+try {
+    socket = io();
+} catch (error) {
+    console.log('Socket.IO not available, using fallback mode');
+    socket = {
+        on: () => {},
+        emit: () => {},
+        connected: false
+    };
+}
 
 // DOM Elements
 const activePetsElement = document.getElementById('activePets');
@@ -592,6 +602,7 @@ async function connectDevice(petId, deviceId) {
 
 // Utility functions
 function showNotification(message, type = 'info') {
+    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.style.cssText = `
@@ -602,79 +613,80 @@ function showNotification(message, type = 'info') {
         color: white;
         padding: 1rem 1.5rem;
         border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        z-index: 1001;
-        transform: translateX(100%);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+        transform: translateX(300px);
         transition: transform 0.3s ease;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        max-width: 300px;
     `;
     
     notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
-        </div>
+        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle" style="margin-right: 0.5rem;"></i>
+        ${message}
     `;
     
     document.body.appendChild(notification);
     
-    // Slide in
+    // Animate in
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 100);
     
-    // Slide out and remove
+    // Animate out and remove
     setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
+        notification.style.transform = 'translateX(300px)';
         setTimeout(() => {
             if (document.body.contains(notification)) {
                 document.body.removeChild(notification);
             }
         }, 300);
-    }, 4000);
+    }, 3000);
 }
 
-// Add some interactive effects
-document.addEventListener('mousemove', (e) => {
-    const hero = document.querySelector('.hero');
-    if (!hero) return;
+// Emergency debug and test functions
+function testAllFunctions() {
+    console.log('Testing all functions...');
+    showNotification('Testing notification system!', 'success');
     
-    const rect = hero.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // Test all critical functions
+    const functions = [
+        'toggleTheme', 'launchDemo', 'watchDemo', 'showRegistration', 
+        'closeRegistration', 'closeDeviceModal', 'submitRegistration'
+    ];
     
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const rotateX = (y - centerY) / centerY * 2;
-    const rotateY = (centerX - x) / centerX * 2;
-    
-    const dashboardCard = document.querySelector('.dashboard-card');
-    if (dashboardCard) {
-        dashboardCard.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-    }
-});
-
-// Reset card position when mouse leaves hero
-document.querySelector('.hero')?.addEventListener('mouseleave', () => {
-    const dashboardCard = document.querySelector('.dashboard-card');
-    if (dashboardCard) {
-        dashboardCard.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
-    }
-});
-
-// Performance monitoring
-let lastUpdate = Date.now();
-function trackPerformance() {
-    const now = Date.now();
-    const delta = now - lastUpdate;
-    lastUpdate = now;
-    
-    if (delta > 100) { // Log if update takes more than 100ms
-        console.log(`Performance: Update took ${delta}ms`);
-    }
+    functions.forEach(func => {
+        if (typeof window[func] === 'function') {
+            console.log(`✅ ${func} is available`);
+        } else {
+            console.error(`❌ ${func} is NOT available`);
+        }
+    });
 }
 
-// Initialize performance tracking
-setInterval(trackPerformance, 1000);
+// Add emergency test button (remove after testing)
+document.addEventListener('DOMContentLoaded', function() {
+    // Add test button temporarily
+    const testBtn = document.createElement('button');
+    testBtn.textContent = 'TEST FUNCTIONS';
+    testBtn.style.cssText = 'position:fixed;top:10px;left:10px;z-index:99999;background:red;color:white;padding:10px;';
+    testBtn.onclick = testAllFunctions;
+    document.body.appendChild(testBtn);
+    
+    // Test immediately
+    setTimeout(testAllFunctions, 1000);
+});
 
-console.log('🚀 PetTracker Pro frontend loaded successfully!');
+// Make functions globally available
+window.showNotification = showNotification;
+window.toggleTheme = toggleTheme;
+window.launchDemo = launchDemo;
+window.watchDemo = watchDemo;
+window.showRegistration = showRegistration;
+window.closeRegistration = closeRegistration;
+window.closeDeviceModal = closeDeviceModal;
+window.submitRegistration = submitRegistration;
+window.pairDevice = pairDevice;
+
+console.log('🚀 All functions loaded and globally accessible');

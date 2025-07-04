@@ -1,5 +1,16 @@
 // Dashboard JavaScript for Real-time Pet Tracking
-const socket = io();
+// Initialize Socket.IO connection (with fallback)
+let socket;
+try {
+    socket = io();
+} catch (error) {
+    console.log('Socket.IO not available, using fallback mode');
+    socket = {
+        on: () => {},
+        emit: () => {},
+        connected: false
+    };
+}
 
 // Global variables
 let map;
@@ -38,7 +49,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeTheme();
     initializeDashboard();
     setupPetRegistrationHandlers();
-    hideLoadingOverlay();
+    initializeKeyboardShortcuts();
+    
+    // Hide loading overlay after a delay
+    setTimeout(() => {
+        hideLoadingOverlay();
+    }, 2000);
 });
 
 function initializeDashboard() {
@@ -754,5 +770,23 @@ const markerStyles = `
 `;
 
 document.head.insertAdjacentHTML('beforeend', markerStyles);
+
+// Make all dashboard functions globally accessible
+window.toggleTheme = toggleTheme;
+window.showAddPetModal = showAddPetModal;
+window.closeAddPetModal = closeAddPetModal;
+window.closeDashboardDeviceModal = closeDashboardDeviceModal;
+window.submitDashboardPetForm = submitDashboardPetForm;
+window.connectDashboardDevice = connectDashboardDevice;
+window.refreshData = refreshData;
+window.centerMap = centerMap;
+window.toggleSatellite = toggleSatellite;
+window.setMapView = setMapView;
+window.filterPets = filterPets;
+window.clearAlerts = clearAlerts;
+window.showHelp = showHelp;
+window.showSettings = showSettings;
+window.exportData = exportData;
+window.showDashboardNotification = showDashboardNotification;
 
 console.log('🚀 PetTracker Pro Dashboard loaded successfully!');

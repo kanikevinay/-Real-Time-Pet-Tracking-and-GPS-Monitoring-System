@@ -1,9 +1,17 @@
+// PetTracker Pro - Homepage JavaScript
+console.log('🚀 Loading PetTracker Pro...');
+
 // Initialize Socket.IO connection (with fallback)
 let socket;
 try {
-    socket = io();
+    if (typeof io !== 'undefined') {
+        socket = io();
+        console.log('✅ Socket.IO connected');
+    } else {
+        throw new Error('Socket.IO not available');
+    }
 } catch (error) {
-    console.log('Socket.IO not available, using fallback mode');
+    console.log('⚠️ Socket.IO not available, using fallback mode');
     socket = {
         on: () => {},
         emit: () => {},
@@ -12,9 +20,7 @@ try {
 }
 
 // DOM Elements
-const activePetsElement = document.getElementById('activePets');
-const onlinePercentElement = document.getElementById('onlinePercent');
-const petListElement = document.getElementById('petList');
+let activePetsElement, onlinePercentElement, petListElement;
 
 // Application state
 let pets = [];
@@ -22,11 +28,12 @@ let systemStats = {};
 let registeredPets = [];
 let currentPendingPet = null;
 
-// Theme management
+// Theme management functions (defined first)
 function initializeTheme() {
     const savedTheme = localStorage.getItem('pettracker-theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
+    console.log('🎨 Theme initialized:', savedTheme);
 }
 
 function toggleTheme() {
@@ -36,6 +43,8 @@ function toggleTheme() {
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('pettracker-theme', newTheme);
     updateThemeIcon(newTheme);
+    showNotification(`Switched to ${newTheme} mode`, 'success');
+    console.log('🎨 Theme toggled to:', newTheme);
 }
 
 function updateThemeIcon(theme) {
@@ -43,6 +52,201 @@ function updateThemeIcon(theme) {
     if (themeIcon) {
         themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
     }
+}
+
+// Navigation and demo functions
+function launchDemo() {
+    console.log('🚀 Launching demo...');
+    showNotification('Opening dashboard...', 'info');
+    
+    try {
+        // Try to navigate in same window first
+        window.location.href = '/dashboard';
+    } catch (error) {
+        console.log('Opening dashboard in new window');
+        window.open('/dashboard', '_blank');
+    }
+}
+
+function watchDemo() {
+    console.log('📖 Opening demo guide...');
+    showDemoGuide();
+}
+
+function showDemoGuide() {
+    console.log('📋 Showing demo guide modal...');
+    
+    // Remove existing modal if any
+    const existingModal = document.querySelector('.demo-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal demo-modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>🐕 PetTracker Pro Demo Guide</h2>
+                <button class="modal-close" onclick="closeDemoGuide()">&times;</button>
+            </div>
+            <div style="padding: 2rem;">
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">How to Use PetTracker Pro</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                            <div style="width: 40px; height: 40px; background: var(--accent-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">1</div>
+                            <div>
+                                <strong>Register Your Pet</strong><br>
+                                <span style="color: var(--text-secondary);">Click "Register Pet" and fill in your pet's information</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                            <div style="width: 40px; height: 40px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">2</div>
+                            <div>
+                                <strong>Connect IoT Device</strong><br>
+                                <span style="color: var(--text-secondary);">Choose from available GPS collars or tags to pair with your pet</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                            <div style="width: 40px; height: 40px; background: var(--info); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">3</div>
+                            <div>
+                                <strong>Monitor Live</strong><br>
+                                <span style="color: var(--text-secondary);">View real-time GPS tracking, battery status, and safety alerts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 2rem;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">🚀 Live Features</h4>
+                    <p style="color: var(--text-secondary); margin: 0;">Real-time GPS • Battery monitoring • Geofencing • Instant alerts • 24/7 tracking</p>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeDemoGuide()">Close Guide</button>
+                    <button type="button" class="btn-primary" onclick="closeDemoGuide(); launchDemo();">Try Dashboard</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    showNotification('Demo guide opened!', 'success');
+}
+
+function closeDemoGuide() {
+    console.log('❌ Closing demo guide...');
+    const modal = document.querySelector('.demo-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Pet registration functions
+function showRegistration() {
+    console.log('📝 Opening pet registration...');
+    const modal = document.getElementById('registrationModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        showNotification('Registration form opened', 'info');
+    } else {
+        console.error('❌ Registration modal not found');
+        showNotification('Registration form not found', 'error');
+    }
+}
+
+function closeRegistration() {
+    console.log('❌ Closing registration...');
+    const modal = document.getElementById('registrationModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Reset form
+        const form = document.getElementById('petRegistrationForm');
+        if (form) form.reset();
+    }
+}
+
+function closeDeviceModal() {
+    console.log('❌ Closing device modal...');
+    const modal = document.getElementById('deviceModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function submitRegistration() {
+    console.log('📝 Submitting pet registration...');
+    
+    const form = document.getElementById('petRegistrationForm');
+    if (!form) {
+        console.error('❌ Registration form not found');
+        showNotification('Registration form not found', 'error');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    
+    const petData = {
+        name: formData.get('name'),
+        species: formData.get('species'),
+        breed: formData.get('breed'),
+        age: formData.get('age'),
+        avatar: formData.get('avatar') || getDefaultAvatar(formData.get('species'))
+    };
+    
+    console.log('📋 Pet data:', petData);
+    
+    // Validate required fields
+    if (!petData.name || !petData.species) {
+        showNotification('Please fill in required fields (Name and Species)', 'error');
+        return;
+    }
+    
+    // Send to server
+    socket.emit('register_pet', petData);
+    
+    // Show success message
+    showNotification(`${petData.name} registered successfully! Please pair with a device.`, 'success');
+    
+    // Close registration modal and show device pairing
+    closeRegistration();
+    setTimeout(() => {
+        const deviceModal = document.getElementById('deviceModal');
+        if (deviceModal) {
+            deviceModal.style.display = 'flex';
+        }
+    }, 500);
+}
+
+function getDefaultAvatar(species) {
+    const avatars = {
+        'dog': '🐕',
+        'cat': '🐱',
+        'bird': '🐦',
+        'rabbit': '🐰',
+        'other': '🐾'
+    };
+    return avatars[species] || '🐾';
+}
+
+function pairDevice(deviceId) {
+    console.log('🔗 Pairing device:', deviceId);
+    
+    // Send pairing request to server
+    socket.emit('pair_device', { deviceId });
+    
+    // Show success message
+    showNotification(`Device ${deviceId} paired successfully! Your pet is now being tracked.`, 'success');
+    
+    // Close device modal
+    closeDeviceModal();
+    
+    // Refresh data
+    setTimeout(() => {
+        location.reload();
+    }, 2000);
 }
 
 // Initialize the application

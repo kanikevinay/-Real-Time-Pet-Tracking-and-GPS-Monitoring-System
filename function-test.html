@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetTracker Pro - Function Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐕 PetTracker Pro - Function Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Function Availability Test</h2>
+        <button onclick="testFunctions()">Test All Functions</button>
+        <div id="function-results" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 Theme Functions</h2>
+        <button onclick="testThemeToggle()">Test Theme Toggle</button>
+        <button onclick="window.toggleTheme ? window.toggleTheme() : alert('toggleTheme not found')">Direct Toggle</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Demo Functions</h2>
+        <button onclick="testLaunchDemo()">Test Launch Demo</button>
+        <button onclick="testWatchDemo()">Test Watch Demo</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Registration Functions</h2>
+        <button onclick="testShowRegistration()">Test Show Registration</button>
+        <button onclick="testCloseRegistration()">Test Close Registration</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 Navigation Test</h2>
+        <button onclick="window.open('homepage.html', '_blank')">Test Homepage</button>
+        <button onclick="window.open('dashboard.html', '_blank')">Test Dashboard</button>
+    </div>
+
+    <script>
+        console.log('🧪 Loading function test page...');
+        
+        function testFunctions() {
+            const functions = [
+                'toggleTheme',
+                'launchDemo', 
+                'watchDemo',
+                'showRegistration',
+                'closeRegistration',
+                'closeDeviceModal',
+                'submitRegistration',
+                'pairDevice',
+                'closeDemoGuide'
+            ];
+            
+            const results = functions.map(func => {
+                const exists = typeof window[func] === 'function';
+                return `${func}: ${exists ? '✅ Available' : '❌ Missing'}`;
+            });
+            
+            document.getElementById('function-results').innerHTML = results.join('<br>');
+        }
+        
+        function testThemeToggle() {
+            if (typeof window.toggleTheme === 'function') {
+                try {
+                    window.toggleTheme();
+                    alert('✅ Theme toggle executed successfully!');
+                } catch (error) {
+                    alert('❌ Error executing toggleTheme: ' + error.message);
+                }
+            } else {
+                alert('❌ toggleTheme function not found');
+            }
+        }
+        
+        function testLaunchDemo() {
+            if (typeof window.launchDemo === 'function') {
+                try {
+                    window.launchDemo();
+                    alert('✅ Launch demo executed successfully!');
+                } catch (error) {
+                    alert('❌ Error executing launchDemo: ' + error.message);
+                }
+            } else {
+                alert('❌ launchDemo function not found');
+            }
+        }
+        
+        function testWatchDemo() {
+            if (typeof window.watchDemo === 'function') {
+                try {
+                    window.watchDemo();
+                    alert('✅ Watch demo executed successfully!');
+                } catch (error) {
+                    alert('❌ Error executing watchDemo: ' + error.message);
+                }
+            } else {
+                alert('❌ watchDemo function not found');
+            }
+        }
+        
+        function testShowRegistration() {
+            if (typeof window.showRegistration === 'function') {
+                try {
+                    window.showRegistration();
+                    alert('✅ Show registration executed successfully!');
+                } catch (error) {
+                    alert('❌ Error executing showRegistration: ' + error.message);
+                }
+            } else {
+                alert('❌ showRegistration function not found');
+            }
+        }
+        
+        function testCloseRegistration() {
+            if (typeof window.closeRegistration === 'function') {
+                try {
+                    window.closeRegistration();
+                    alert('✅ Close registration executed successfully!');
+                } catch (error) {
+                    alert('❌ Error executing closeRegistration: ' + error.message);
+                }
+            } else {
+                alert('❌ closeRegistration function not found');
+            }
+        }
+        
+        // Load app.js after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 Loading app.js...');
+            
+            const script = document.createElement('script');
+            script.src = 'app.js';
+            script.onload = function() {
+                console.log('✅ app.js loaded successfully');
+                setTimeout(() => {
+                    console.log('🧪 Auto-testing functions...');
+                    testFunctions();
+                }, 500);
+            };
+            script.onerror = function() {
+                console.error('❌ Failed to load app.js');
+                document.getElementById('function-results').innerHTML = '❌ Failed to load app.js';
+            };
+            document.head.appendChild(script);
+        });
+    </script>
+</body>
+</html>

@@ -847,4 +847,11 @@ window.exportData = exportData;
 window.showDashboardNotification = showDashboardNotification;
 window.navigateHome = navigateHome;
 
+// Debug: Verify functions are accessible
+console.log('🔧 Dashboard function verification:');
+console.log('  toggleTheme:', typeof window.toggleTheme);
+console.log('  showAddPetModal:', typeof window.showAddPetModal);
+console.log('  refreshData:', typeof window.refreshData);
+console.log('  navigateHome:', typeof window.navigateHome);
+
 console.log('🚀 PetTracker Pro Dashboard loaded successfully!');

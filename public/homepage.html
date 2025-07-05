@@ -355,7 +355,80 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <!-- Socket.IO (conditionally loaded) -->
+    <script>
+        // Global variable to track if functions are ready
+        window.petTrackerReady = false;
+        
+        // Queue for functions called before ready
+        window.petTrackerQueue = [];
+        
+        // Wrapper function for safe function calls
+        function safeCall(funcName, ...args) {
+            if (window.petTrackerReady && typeof window[funcName] === 'function') {
+                try {
+                    return window[funcName](...args);
+                } catch (error) {
+                    console.error(`Error calling ${funcName}:`, error);
+                    alert(`Error: ${funcName} failed. Please refresh the page.`);
+                }
+            } else {
+                console.log(`Queueing ${funcName} until ready...`);
+                window.petTrackerQueue.push({ funcName, args });
+                if (!window.petTrackerReady) {
+                    setTimeout(() => safeCall(funcName, ...args), 100);
+                }
+            }
+        }
+        
+        // Override onclick functions with safe wrappers
+        window.toggleTheme = () => safeCall('toggleTheme');
+        window.launchDemo = () => safeCall('launchDemo');
+        window.watchDemo = () => safeCall('watchDemo');
+        window.showRegistration = () => safeCall('showRegistration');
+        window.closeRegistration = () => safeCall('closeRegistration');
+        window.closeDeviceModal = () => safeCall('closeDeviceModal');
+        window.submitRegistration = () => safeCall('submitRegistration');
+        window.closeDemoGuide = () => safeCall('closeDemoGuide');
+        
+        // Try to load Socket.IO, fallback gracefully if not available
+        var script = document.createElement('script');
+        script.src = '/socket.io/socket.io.js';
+        script.onerror = function() {
+            console.log('⚠️ Socket.IO not available, using fallback mode');
+            // Continue loading app.js even if Socket.IO fails
+            loadAppScript();
+        };
+        script.onload = function() {
+            console.log('✅ Socket.IO loaded successfully');
+            loadAppScript();
+        };
+        document.head.appendChild(script);
+
+        function loadAppScript() {
+            var appScript = document.createElement('script');
+            appScript.src = 'app.js';
+            appScript.onload = function() {
+                console.log('✅ app.js loaded, checking functions...');
+                setTimeout(() => {
+                    window.petTrackerReady = true;
+                    console.log('🚀 PetTracker functions ready!');
+                    
+                    // Process queued function calls
+                    window.petTrackerQueue.forEach(({funcName, args}) => {
+                        if (typeof window[funcName] === 'function') {
+                            window[funcName](...args);
+                        }
+                    });
+                    window.petTrackerQueue = [];
+                }, 100);
+            };
+            appScript.onerror = function() {
+                console.error('❌ Failed to load app.js');
+                alert('Failed to load application scripts. Please refresh the page.');
+            };
+            document.head.appendChild(appScript);
+        }
+    </script>
 </body>
 </html>

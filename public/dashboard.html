@@ -306,8 +306,95 @@
     </div>
 
     <!-- Scripts -->
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="dashboard.js"></script>
+    <script>
+        // Global variable to track if dashboard functions are ready
+        window.dashboardReady = false;
+        
+        // Queue for functions called before ready
+        window.dashboardQueue = [];
+        
+        // Wrapper function for safe function calls
+        function safeDashboardCall(funcName, ...args) {
+            if (window.dashboardReady && typeof window[funcName] === 'function') {
+                try {
+                    return window[funcName](...args);
+                } catch (error) {
+                    console.error(`Error calling ${funcName}:`, error);
+                    alert(`Error: ${funcName} failed. Please refresh the page.`);
+                }
+            } else {
+                console.log(`Queueing ${funcName} until dashboard ready...`);
+                window.dashboardQueue.push({ funcName, args });
+                if (!window.dashboardReady) {
+                    setTimeout(() => safeDashboardCall(funcName, ...args), 100);
+                }
+            }
+        }
+        
+        // Override onclick functions with safe wrappers
+        window.toggleTheme = () => safeDashboardCall('toggleTheme');
+        window.showAddPetModal = () => safeDashboardCall('showAddPetModal');
+        window.refreshData = () => safeDashboardCall('refreshData');
+        window.navigateHome = () => safeDashboardCall('navigateHome');
+        window.centerMap = () => safeDashboardCall('centerMap');
+        window.toggleSatellite = () => safeDashboardCall('toggleSatellite');
+        window.clearAlerts = () => safeDashboardCall('clearAlerts');
+        window.showHelp = () => safeDashboardCall('showHelp');
+        window.showSettings = () => safeDashboardCall('showSettings');
+        window.exportData = () => safeDashboardCall('exportData');
+        window.closeAddPetModal = () => safeDashboardCall('closeAddPetModal');
+        window.closeDashboardDeviceModal = () => safeDashboardCall('closeDashboardDeviceModal');
+        
+        // Try to load Socket.IO, fallback gracefully if not available
+        var script = document.createElement('script');
+        script.src = '/socket.io/socket.io.js';
+        script.onerror = function() {
+            console.log('⚠️ Socket.IO not available, using fallback mode');
+            // Continue loading other scripts even if Socket.IO fails
+            loadOtherScripts();
+        };
+        script.onload = function() {
+            console.log('✅ Socket.IO loaded successfully');
+            loadOtherScripts();
+        };
+        document.head.appendChild(script);
+
+        function loadOtherScripts() {
+            // Load Leaflet.js
+            var leafletScript = document.createElement('script');
+            leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            leafletScript.onload = function() {
+                console.log('✅ Leaflet.js loaded successfully');
+                // Load dashboard.js after Leaflet is loaded
+                var dashboardScript = document.createElement('script');
+                dashboardScript.src = 'dashboard.js';
+                dashboardScript.onload = function() {
+                    console.log('✅ dashboard.js loaded, checking functions...');
+                    setTimeout(() => {
+                        window.dashboardReady = true;
+                        console.log('🚀 Dashboard functions ready!');
+                        
+                        // Process queued function calls
+                        window.dashboardQueue.forEach(({funcName, args}) => {
+                            if (typeof window[funcName] === 'function') {
+                                window[funcName](...args);
+                            }
+                        });
+                        window.dashboardQueue = [];
+                    }, 100);
+                };
+                dashboardScript.onerror = function() {
+                    console.error('❌ Failed to load dashboard.js');
+                    alert('Failed to load dashboard scripts. Please refresh the page.');
+                };
+                document.head.appendChild(dashboardScript);
+            };
+            leafletScript.onerror = function() {
+                console.error('❌ Failed to load Leaflet.js');
+                alert('Failed to load map library. Please refresh the page.');
+            };
+            document.head.appendChild(leafletScript);
+        }
+    </script>
 </body>
 </html>

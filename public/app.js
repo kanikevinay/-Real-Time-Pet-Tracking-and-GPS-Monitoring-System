@@ -1,6 +1,10 @@
 // PetTracker Pro - Homepage JavaScript
 console.log('🚀 Loading PetTracker Pro...');
 
+// Debug: Check if we're in the right environment
+console.log('📍 Current location:', window.location.href);
+console.log('🌐 User agent:', navigator.userAgent);
+
 // Initialize Socket.IO connection (with fallback)
 let socket;
 try {
@@ -685,13 +689,6 @@ function showDemoGuide() {
     document.body.appendChild(modal);
 }
 
-function closeDemoGuide(element) {
-    const modal = element.closest('.modal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
 function toggleMobileMenu() {
     const mobileMenu = document.querySelector('.mobile-menu');
     if (mobileMenu) {
@@ -955,5 +952,13 @@ window.closeRegistration = closeRegistration;
 window.closeDeviceModal = closeDeviceModal;
 window.submitRegistration = submitRegistration;
 window.pairDevice = pairDevice;
+window.closeDemoGuide = closeDemoGuide;
+
+// Debug: Verify functions are accessible
+console.log('🔧 Function verification:');
+console.log('  toggleTheme:', typeof window.toggleTheme);
+console.log('  launchDemo:', typeof window.launchDemo);
+console.log('  showRegistration:', typeof window.showRegistration);
+console.log('  watchDemo:', typeof window.watchDemo);
 
 console.log('🚀 All functions loaded and globally accessible');
